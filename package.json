@@ -1,0 +1,33 @@
+{
+  "name": "@suinplayground/node-stream-api",
+  "version": "0.0.0-development",
+  "description": "",
+  "keywords": [],
+  "license": "MIT",
+  "author": "suin",
+  "type": "commonjs",
+  "scripts": {
+    "build": "cargo-cp-artifact -nc lib.node -- cargo build --message-format=json-render-diagnostics",
+    "install": "npm run build",
+    "test": "cargo test",
+    "dev": "yarn build && yarn tsx main.ts"
+  },
+  "dependencies": {
+    "bzip2-maybe": "^1.0.0",
+    "unbzip2-stream": "^1.4.3"
+  },
+  "devDependencies": {
+    "@tsconfig/node21": "^21.0.0",
+    "@tsconfig/strictest": "^2.0.2",
+    "@types/node": "^20.10.5",
+    "@types/unbzip2-stream": "^1",
+    "cargo-cp-artifact": "^0.1.8",
+    "prettier": "^3.1.1",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  },
+  "packageManager": "yarn@4.0.2",
+  "engines": {
+    "node": ">=21"
+  }
+}
