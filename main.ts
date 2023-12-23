@@ -79,17 +79,25 @@ async function runUnbzip2Demo() {
 
 async function runUnbzip2Benchmark() {
   console.info("Bzip2を解凍するベンチマーク: RustとJavaScriptどっちが速いか？");
-  console.time("unzipWithRust");
+  console.time("bzip2 (Rust)");
   await unzipWithRust();
-  console.timeEnd("unzipWithRust");
+  console.timeEnd("bzip2 (Rust)");
 
-  console.time("unzipWithJavaScript");
+  console.time("unbzip2-stream (JS)");
   await unzipWithJavaScript();
-  console.timeEnd("unzipWithJavaScript");
+  console.timeEnd("unbzip2-stream (JS)");
 
-  console.time("unzipWithCommand");
-  await unzipWithCommand();
-  console.timeEnd("unzipWithCommand");
+  console.time("bzip2 command");
+  await unzipWithBzip2();
+  console.timeEnd("bzip2 command");
+
+  console.time("lbzip2 command");
+  await unzipWithLbzip2();
+  console.timeEnd("lbzip2 command");
+
+  console.time("pbzip2 command");
+  await unzipWithPbzip2();
+  console.timeEnd("pbzip2 command");
 }
 
 async function unzipWithRust() {
@@ -119,10 +127,28 @@ async function unzipWithJavaScript() {
   await pipeline(file, unbzip2, output);
 }
 
-async function unzipWithCommand() {
+async function unzipWithBzip2() {
   const file = createReadStream("large.bz2");
-  const output = createWriteStream("extracted-data-with-command.data");
+  const output = createWriteStream("extracted-data-with-bzip2.data");
   const command = spawn("bzip2", ["-d", "-c"], {
+    stdio: ["pipe", "pipe", "inherit"],
+  });
+  await pipeline(file, createTransform(command), output);
+}
+
+async function unzipWithLbzip2() {
+  const file = createReadStream("large.bz2");
+  const output = createWriteStream("extracted-data-with-lbzip2.data");
+  const command = spawn("lbzip2", ["-d", "-c"], {
+    stdio: ["pipe", "pipe", "inherit"],
+  });
+  await pipeline(file, createTransform(command), output);
+}
+
+async function unzipWithPbzip2() {
+  const file = createReadStream("large.bz2");
+  const output = createWriteStream("extracted-data-with-pbzip2.data");
+  const command = spawn("pbzip2", ["-d", "-c"], {
     stdio: ["pipe", "pipe", "inherit"],
   });
   await pipeline(file, createTransform(command), output);

@@ -13,7 +13,7 @@ yarn run dev
 
 ```
 ❯ yarn dev
-    Finished dev [unoptimized + debuginfo] target(s) in 0.01s
+    Finished dev [unoptimized + debuginfo] target(s) in 0.06s
 Streamを受け流すだけのデモ
 [rust] write: "hello"
 [rust] read: "hello"
@@ -24,6 +24,9 @@ Streamを受け流すだけのデモ
 Bzip2を解凍するデモ
 { chunk: 'hello world\nline second\nline third\n' }
 Bzip2を解凍するベンチマーク: RustとJavaScriptどっちが速いか？
-unzipWithRust: 8.907s
-unzipWithJavaScript: 20.803s
+bzip2 (Rust): 7.208s
+unbzip2-stream (JS): 16.139s
+bzip2 command: 3.577s
+lbzip2 command: 573.724ms
+pbzip2 command: 3.558s
 ```
