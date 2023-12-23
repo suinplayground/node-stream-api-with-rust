@@ -9,6 +9,7 @@ import { Readable, Writable, Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { createReadStream, createWriteStream } from "node:fs";
 import unbzip2Stream from "unbzip2-stream";
+import { ChildProcess, spawn } from "node:child_process";
 
 main().catch((err) => console.error(err));
 
@@ -85,6 +86,10 @@ async function runUnbzip2Benchmark() {
   console.time("unzipWithJavaScript");
   await unzipWithJavaScript();
   console.timeEnd("unzipWithJavaScript");
+
+  console.time("unzipWithCommand");
+  await unzipWithCommand();
+  console.timeEnd("unzipWithCommand");
 }
 
 async function unzipWithRust() {
@@ -112,4 +117,39 @@ async function unzipWithJavaScript() {
   const output = createWriteStream("extracted-data-with-unbzip2-stream.data");
   const unbzip2 = unbzip2Stream();
   await pipeline(file, unbzip2, output);
+}
+
+async function unzipWithCommand() {
+  const file = createReadStream("large.bz2");
+  const output = createWriteStream("extracted-data-with-command.data");
+  const command = spawn("bzip2", ["-d", "-c"], {
+    stdio: ["pipe", "pipe", "inherit"],
+  });
+  await pipeline(file, createTransform(command), output);
+}
+
+// from: https://blog.lufia.org/entry/2021/09/26/113000
+function createTransform(p: ChildProcess): Transform {
+  const data: string[] = [];
+  p.stdout?.on("data", (s) => {
+    data.push(s);
+  });
+
+  const t = new Transform({
+    transform: (s, encoding, callback): void => {
+      p.stdin?.write(s);
+      while (data.length > 0) t.push(data.shift());
+      callback();
+    },
+    final: async (callback): Promise<void> => {
+      p.stdin?.end();
+      const status = await new Promise((resolve, reject) => {
+        p.on("close", resolve);
+      });
+      if (status !== 0) throw new Error(`${p.spawnfile}: exit with ${status}`);
+      while (data.length > 0) t.push(data.shift());
+      callback();
+    },
+  });
+  return t;
 }
